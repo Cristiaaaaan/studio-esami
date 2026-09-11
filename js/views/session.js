@@ -287,6 +287,9 @@ function finishSession(root) {
     const max = sess.items.reduce((s, it) => s + (it.points || 6), 0);
     addSimResult({ d: todayStr(), course: sess.course, label: sess.examLabel, score: pts, max, secs });
     clearActiveSession();
+    if (get().settings.syncToken) {
+      import('../sync.js').then(m => m.syncUp()).catch(() => {});
+    }
     renderEnd(root, {
       title: pts >= max * 0.6 ? 'Buon compito!' : 'Compito registrato',
       mark: pts >= max * 0.6 ? 'ok' : 'mid',
@@ -302,6 +305,10 @@ function finishSession(root) {
   }
 
   clearActiveSession();
+  // salvataggio silenzioso nel cloud (se configurato)
+  if (get().settings.syncToken) {
+    import('../sync.js').then(m => m.syncUp()).catch(() => {});
+  }
   renderEnd(root, {
     title: acc >= 70 ? 'Ottima sessione!' : acc >= 40 ? 'Sessione completata' : 'Sessione completata',
     mark: acc >= 70 ? 'ok' : 'mid',

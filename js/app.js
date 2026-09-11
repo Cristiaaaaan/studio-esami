@@ -66,5 +66,19 @@ function renderApp() {
 applyTheme();
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 window.addEventListener('hashchange', renderApp);
-window.addEventListener('DOMContentLoaded', renderApp);
-if (document.readyState !== 'loading') renderApp();
+
+// avvio: se la sincronizzazione è configurata, fonde il cloud prima di disegnare
+let booted = false;
+function boot() {
+  if (booted) return;
+  booted = true;
+  const start = () => { renderApp(); };
+  if (get().settings.syncToken) {
+    const timeout = new Promise(res => setTimeout(res, 6000));
+    import('./sync.js')
+      .then(m => Promise.race([m.syncNow().catch(e => console.warn('sync fallita:', e.message)), timeout]))
+      .then(start, start);
+  } else start();
+}
+window.addEventListener('DOMContentLoaded', boot);
+if (document.readyState !== 'loading') boot();

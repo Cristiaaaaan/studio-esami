@@ -10,6 +10,9 @@ const DEFAULTS = {
     minutes: 30,              // minuti di studio al giorno
     theme: 'auto',            // auto | light | dark
     name: '',                 // nome (opzionale, per il saluto)
+    syncToken: '',            // token GitHub (scope gist) per la sincronizzazione
+    syncGistId: '',           // id del gist dei progressi
+    syncLast: '',             // ISO dell'ultima sincronizzazione
   },
   srs: {},          // itemId -> {ease, interval, reps, lapses, due}
   topicStats: {},   // topicId -> {seen, correct}
@@ -53,6 +56,30 @@ export function daysBetween(a, b) {
 
 export function updateSettings(patch) {
   Object.assign(load().settings, patch);
+  save();
+}
+
+/* ---- sincronizzazione: esportazione/importazione dello stato ---- */
+
+export function exportState() {
+  const s = load();
+  return {
+    settings: { ...s.settings, syncToken: '' },  // mai esportare il token
+    srs: { ...s.srs },
+    topicStats: { ...s.topicStats },
+    days: { ...s.days },
+    history: s.history.map(h => ({ ...h })),
+    simResults: s.simResults.map(r => ({ ...r })),
+  };
+}
+
+export function importState(next) {
+  const s = load();
+  state = {
+    ...next,
+    settings: { ...s.settings, ...(next.settings || {}) }, // il token locale resta
+    activeSession: s.activeSession, // la sessione in corso è del dispositivo
+  };
   save();
 }
 
