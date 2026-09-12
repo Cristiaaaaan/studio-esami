@@ -6,6 +6,7 @@ import { isDue } from './srs.js';
 import { TOPIC_BY_ID, topicsForDay, START_DATE } from './data/plan.js';
 import { FLASHCARDS_BY_TOPIC, FLASHCARDS } from './data/theory.js';
 import { ALL_EXAMS } from './data/bank.js';
+import { LESSONS, LESSON_ORDER } from './data/lessons.js';
 import { LOGICA_GENS } from './generators/logica.js';
 import { DISCRETA_GENS } from './generators/discreta.js';
 import { shuffle } from './ui.js';
@@ -39,7 +40,7 @@ function bankItem(b) {
   return { ...b, uid: uid(), srsId: 'bank:' + b.id };
 }
 
-// coda di ripasso: flashcard e bank in scadenza
+// coda di ripasso: flashcard, bank e domande quiz lezioni in scadenza
 function reviewQueue() {
   const s = get();
   const due = [];
@@ -50,6 +51,17 @@ function reviewQueue() {
   for (const ex of ALL_EXAMS) for (const it of ex.items) {
     const id = 'bank:' + it.id;
     if (s.srs[id] && isDue(id)) due.push({ sort: s.srs[id].due, item: bankItem(it) });
+  }
+  for (const lid of LESSON_ORDER) {
+    const L = LESSONS[lid];
+    if (!L) continue;
+    L.quiz.forEach((q, idx) => {
+      const id = 'lessonq:' + lid + ':' + idx;
+      if (s.srs[id] && isDue(id)) due.push({ sort: s.srs[id].due, item: {
+        ...q, uid: uid(), srsId: id, course: L.course, topicId: lid,
+        source: 'quiz · lezione', estSec: q.estSec || (q.kind === 'tf' ? 50 : q.kind === 'numeric' ? 100 : 90),
+      } });
+    });
   }
   due.sort((a, b) => a.sort.localeCompare(b.sort));
   return due.map(d => d.item);

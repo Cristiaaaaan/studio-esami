@@ -119,6 +119,17 @@ export function mergeStates(local, remote) {
     else out.topicStats[id] = { seen: Math.max(l.seen, v.seen), correct: Math.max(l.correct, v.correct) };
   }
 
+  // lezioni: la lettura più avanti vince; "done" se completata da qualche parte
+  out.lessons = { ...(local.lessons || {}) };
+  for (const [id, v] of Object.entries(remote.lessons || {})) {
+    const l = out.lessons[id];
+    if (!l) out.lessons[id] = { ...v };
+    else out.lessons[id] = {
+      sec: Math.max(l.sec || 0, v.sec || 0),
+      done: String(l.done || '') > String(v.done || '') ? l.done : v.done,
+    };
+  }
+
   // cronologia: concatena e deduplica
   const hk = (h) => h.d + '|' + h.itemId + '|' + h.sec + '|' + (h.correct ? 1 : 0);
   const seen = new Set((local.history || []).map(hk));

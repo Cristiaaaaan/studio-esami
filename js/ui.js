@@ -9,6 +9,11 @@ export function ktx(s) {
   return `<span class="ktx">${s}</span>`;
 }
 
+// mini markdown per le soluzioni: **grassetto** -> <b>
+export function mdBold(s) {
+  return String(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+}
+
 export function renderMath(el) {
   if (window.renderMathInElement) {
     window.renderMathInElement(el, {

@@ -2,6 +2,7 @@
 
 import { get, todayStr, daysBetween, streakInfo } from '../storage.js';
 import { topicsForDay, START_DATE, TOPIC_BY_ID, COURSES } from '../data/plan.js';
+import { nextLesson } from '../data/lessons.js';
 import { renderMath, icon, esc, fmtDateIt } from '../ui.js';
 
 export function renderDashboard(root) {
@@ -77,6 +78,22 @@ export function renderDashboard(root) {
     <p class="dim small" style="margin:0 2px 6px">Oggi niente argomenti nuovi: perfetto per recuperare il ripasso in scadenza e fare una simulazione.</p>`}
 
     <h2 class="sect">La tua sessione</h2>
+    ${(() => {
+      const nl = nextLesson(s.lessons);
+      if (!nl) return '';
+      const prog = s.lessons[nl.id]?.sec || 0;
+      return `
+      <div class="card" style="padding:16px;margin-bottom:14px;border-color:color-mix(in srgb, var(--blue) 35%, var(--rule))">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="font-size:26px">📖</div>
+          <div style="flex:1">
+            <div style="font-weight:700">Lezione: ${esc(nl.lesson.title)}</div>
+            <div class="dim small">${COURSES[nl.lesson.course].short} · ${nl.lesson.minutes} min di spiegazione + 10 min di domande${prog ? ` · ripresa a pagina ${prog + 1}/${nl.lesson.sections.length}` : ''}</div>
+          </div>
+          <a class="btn" href="#/lezione/${nl.id}">${prog ? 'Riprendi' : 'Inizia'} ${icon('right')}</a>
+        </div>
+      </div>`;
+    })()}
     <div class="card" style="padding:16px">
       ${active ? `
         <div style="display:flex;align-items:center;gap:14px">

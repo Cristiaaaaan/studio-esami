@@ -6,6 +6,7 @@ import { renderExams } from './views/exams.js';
 import { renderStats } from './views/stats.js';
 import { renderSettings, applyTheme } from './views/settings.js';
 import { renderSession } from './views/session.js';
+import { renderLesson } from './views/lesson.js';
 import { icon } from './ui.js';
 import { get, todayStr } from './storage.js';
 
@@ -35,6 +36,13 @@ function renderApp() {
   const app = document.getElementById('app');
   const raw = location.hash.replace(/^#\/?/, '') || 'oggi';
   const [route, param] = raw.split('/');
+
+  // lezione: lettori a parte
+  if (route === 'lezione') {
+    app.innerHTML = nav('') + `<main class="main" id="viewroot"></main>`;
+    renderLesson(document.getElementById('viewroot'), param);
+    return;
+  }
 
   // sessione: gestita a parte (piena schermo)
   if (route === 'sessione') {

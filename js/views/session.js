@@ -1,9 +1,9 @@
 // views/session.js — esecuzione della sessione (daily / topic / exam)
 
-import { get, todayStr, logAnswer, clearActiveSession, setActiveSession, addSimResult } from '../storage.js';
+import { get, todayStr, logAnswer, clearActiveSession, setActiveSession, addSimResult, saveNow } from '../storage.js';
 import { grade } from '../srs.js';
 import { gradeFor } from '../session.js';
-import { renderMath, icon, penMark, esc } from '../ui.js';
+import { renderMath, icon, penMark, esc, mdBold } from '../ui.js';
 import { COURSES, TOPIC_BY_ID } from '../data/plan.js';
 
 const LETTERE = ['A', 'B', 'C', 'D', 'E'];
@@ -16,7 +16,7 @@ export function renderSession(root) {
     <div class="sessbar">
       <button class="back" id="backbtn" title="Torna indietro">${icon('back')}</button>
       <div class="meta">
-        <div class="t">${sess.mode === 'exam' ? `Simulazione · ${esc(sess.examLabel || '')}` : sess.mode === 'topic' ? 'Allenamento' : 'Sessione di oggi'}</div>
+        <div class="t">${sess.mode === 'exam' ? `Simulazione · ${esc(sess.examLabel || '')}` : sess.mode === 'topic' ? 'Allenamento' : sess.mode === 'quiz' ? `Quiz · ${esc(sess.lessonTitle || '')}` : 'Sessione di oggi'}</div>
         <div class="dots" id="dots"></div>
       </div>
       ${sess.mode === 'exam' ? `<div class="timer" id="timer">0:00</div>` : ''}
@@ -95,7 +95,7 @@ function renderFlash(area, it, t0) {
   card.onclick = () => {
     card.classList.add('flipped');
     document.getElementById('fside').textContent = 'Risposta';
-    document.querySelector('#flashcard .fterm').innerHTML = it.solution[0];
+    document.querySelector('#flashcard .fterm').innerHTML = mdBold(it.solution[0]);
     document.getElementById('selfarea').replaceChildren(
       selfButtons('La sapevo', 'Ripassala', (g) => {
         record(it, g === 2, null, (Date.now() - t0) / 1000, g);
@@ -207,7 +207,7 @@ function showSolution(container, it) {
   container.insertAdjacentHTML('beforeend', `
     <div class="solution">
       <div class="solhead">Soluzione</div>
-      <ol class="steps">${it.solution.map((s, i) => `<li data-n="${i + 1}">${s}</li>`).join('')}</ol>
+      <ol class="steps">${it.solution.map((s, i) => `<li data-n="${i + 1}">${mdBold(s)}</li>`).join('')}</ol>
     </div>
   `);
   renderMath(container);
@@ -281,6 +281,29 @@ function finishSession(root) {
   const correct = sess.results.filter(r => r && r.correct).length;
   const secs = Math.round((Date.now() - sess.startedAt) / 1000);
   const acc = answered ? Math.round(100 * correct / answered) : 0;
+
+  if (sess.mode === 'quiz') {
+    // lezione completata: registra e (se configurato) salva nel cloud
+    const s = get();
+    s.lessons[sess.lessonId] = { ...(s.lessons[sess.lessonId] || {}), done: new Date().toISOString() };
+    saveNow();
+    clearActiveSession();
+    if (s.settings.syncToken) import('../sync.js').then(m => m.syncUp()).catch(() => {});
+    renderEnd(root, {
+      title: acc >= 80 ? 'Comprensione verificata!' : acc >= 50 ? 'Quasi tutto chiaro' : 'Rileggi con calma',
+      mark: acc >= 80 ? 'ok' : 'mid',
+      stats: [
+        [`${acc}%`, 'risposte corrette'],
+        [`${correct}<span class="dim">/${answered}</span>`, 'domande'],
+        [`${Math.floor(secs / 60)} min`, 'tempo'],
+      ],
+      note: acc >= 80
+        ? 'Lezione archiviata: d’ora in poi la ritrovi negli esercizi di ripasso. Ora puoi fare la sessione del giorno.'
+        : 'Niente panico: le domande sbagliate spiegano il perché. Rileggi la sezione collegata e rifai il quiz quando vuoi (Argomenti → Lezione).',
+      back: '#/oggi', backLabel: 'Torna a Oggi',
+    });
+    return;
+  }
 
   if (sess.mode === 'exam') {
     const pts = sess.results.reduce((s, r) => s + (r && r.points ? r.points : 0), 0);

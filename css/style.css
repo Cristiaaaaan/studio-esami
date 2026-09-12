@@ -631,8 +631,9 @@ h2.sect::after {
 .choice.wrong .letter { border-color: var(--red); color: var(--red); }
 .choice.dimmed { opacity: .5; }
 
-/* annotazioni penna del prof */
-.choice .pen { position: absolute; inset: -4px -6px; pointer-events: none; }
+/* annotazioni penna del prof (visibili solo dopo la risposta) */
+.choice .pen { position: absolute; inset: -4px -6px; pointer-events: none; visibility: hidden; }
+.choice.correct .pen, .choice.wrong .pen { visibility: visible; }
 .choice.correct .pen path {
   stroke: var(--green);
   stroke-width: 3;
@@ -975,6 +976,87 @@ h2.sect::after {
   text-align: center;
   letter-spacing: .03em;
 }
+
+/* ============ lezioni ============ */
+
+.lesson { padding-top: 22px; }
+.prose {
+  font-size: 16.5px;
+  line-height: 1.75;
+  max-width: 64ch;
+  padding-top: 6px;
+}
+.prose p { margin: 0 0 13px; }
+.prose p:last-child { margin-bottom: 0; }
+.prose strong { font-weight: 700; }
+.prose em { font-style: italic; }
+.prose ul { margin: 0 0 13px; padding-left: 22px; }
+.prose li { margin: 7px 0; }
+.prose li::marker { color: var(--blue); }
+.prose .katex-display { margin: 14px 0; background: var(--paper); border-radius: 10px; padding: 10px 8px; border: 1.5px dashed var(--rule); overflow-x: auto; }
+
+.keybox {
+  background: var(--blue-wash);
+  border-left: 4px solid var(--blue);
+  border-radius: 0 12px 12px 0;
+  padding: 12px 16px;
+  margin: 15px 0;
+  font-size: 15.5px;
+}
+.keybox .kt {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--blue);
+  display: block;
+  margin-bottom: 4px;
+}
+.exambox {
+  background: var(--amber-wash);
+  border-left: 4px solid var(--amber);
+  border-radius: 0 12px 12px 0;
+  padding: 12px 16px;
+  margin: 15px 0;
+  font-size: 15.5px;
+}
+.exambox .kt {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--amber);
+  display: block;
+  margin-bottom: 4px;
+}
+.warnbox {
+  background: var(--red-wash);
+  border-left: 4px solid var(--red);
+  border-radius: 0 12px 12px 0;
+  padding: 12px 16px;
+  margin: 15px 0;
+  font-size: 15.5px;
+}
+.warnbox .kt {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--red);
+  display: block;
+  margin-bottom: 4px;
+}
+.prose table td, .prose table th {
+  border: 1.5px solid var(--rule);
+  padding: 4px 10px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+}
+.prose table { border-collapse: collapse; margin: 12px 0; }
 
 /* ============ animazioni ============ */
 

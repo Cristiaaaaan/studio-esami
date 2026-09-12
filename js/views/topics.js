@@ -5,6 +5,7 @@ import { TOPICS, COURSES } from '../data/plan.js';
 import { topicMastery } from '../srs.js';
 import { FLASHCARDS_BY_TOPIC } from '../data/theory.js';
 import { ALL_EXAMS } from '../data/bank.js';
+import { LESSONS } from '../data/lessons.js';
 import { renderMath, icon, esc } from '../ui.js';
 
 function ring(m) {
@@ -50,6 +51,7 @@ export function renderTopics(root, param) {
               <div class="tname">${esc(t.name)}</div>
               <div class="tmeta">${st ? st.seen + ' svolti · ' + Math.round(100 * st.correct / st.seen) + '%' : 'mai affrontato'}${nCards ? ' · ' + nCards + ' card' : ''}${nBank ? ' · ' + nBank + ' da compito' : ''}</div>
             </div>
+            ${LESSONS[t.id] ? `<a class="goplay" href="#/lezione/${t.id}" title="Lezione: ${esc(t.name)}" style="${get().lessons[t.id]?.done ? 'color:var(--green)' : ''}">${icon('argomenti')}</a>` : ''}
             <button class="goplay" data-play="${t.id}" title="Allenamento su ${esc(t.name)}">${icon('play')}</button>
           </div>`;
         }).join('')}

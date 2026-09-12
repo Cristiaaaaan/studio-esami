@@ -16,6 +16,7 @@ const DEFAULTS = {
   },
   srs: {},          // itemId -> {ease, interval, reps, lapses, due}
   topicStats: {},   // topicId -> {seen, correct}
+  lessons: {},      // lessonId -> {sec: ultima sezione letta, done: ISO completamento}
   days: {},         // 'YYYY-MM-DD' -> {done, total, correct, sec}
   history: [],      // [{d, itemId, topicId, course, kind, correct, sec}]
   activeSession: null,
@@ -67,6 +68,7 @@ export function exportState() {
     settings: { ...s.settings, syncToken: '' },  // mai esportare il token
     srs: { ...s.srs },
     topicStats: { ...s.topicStats },
+    lessons: { ...s.lessons },
     days: { ...s.days },
     history: s.history.map(h => ({ ...h })),
     simResults: s.simResults.map(r => ({ ...r })),
@@ -129,6 +131,7 @@ export function logAnswer({ itemId, topicId, course, kind, correct, sec }) {
 
 export function setActiveSession(sess) { load().activeSession = sess; save(); }
 export function clearActiveSession() { load().activeSession = null; save(); }
+export function saveNow() { save(); }
 
 export function addSimResult(r) { load().simResults.push(r); save(); }
 
